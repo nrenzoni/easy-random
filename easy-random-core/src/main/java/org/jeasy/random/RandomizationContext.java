@@ -47,7 +47,6 @@ class RandomizationContext implements RandomizerContext {
     private final Class<?> type;
 
     private Object rootObject;
-    private Object randomizedObject;
 
     RandomizationContext(final Class<?> type, final EasyRandomParameters parameters) {
         this.type = type;
@@ -109,11 +108,10 @@ class RandomizationContext implements RandomizerContext {
         return startInclusive + new Random().nextInt(endExclusive - startInclusive);
     }
 
-    void setRandomizedObject(Object randomizedObject) {
-        if (this.rootObject == null) {
-            this.rootObject = randomizedObject;
+    void setRootObjectIfUnassigned(Object potentialRootObject) {
+        if (rootObject == null) {
+            rootObject = potentialRootObject;
         }
-        this.randomizedObject = randomizedObject;
     }
 
     @Override
@@ -123,7 +121,12 @@ class RandomizationContext implements RandomizerContext {
 
     @Override
     public Object getCurrentObject() {
-        return randomizedObject;
+        if (stack.empty()) {
+            return rootObject;
+        }
+        else {
+            return stack.lastElement().getObject();
+        }
     }
 
     @Override

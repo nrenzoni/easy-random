@@ -142,7 +142,7 @@ public class EasyRandom extends Random {
 
             // create a new instance of the target type
             result = objectFactory.createInstance(type, context);
-            context.setRandomizedObject(result);
+            context.setRootObjectIfUnassigned(result);
 
             // cache instance in the population context
             context.addPopulatedBean(type, result);
