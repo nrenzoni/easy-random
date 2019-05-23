@@ -26,6 +26,8 @@ package org.jeasy.random.api;
 import org.jeasy.random.EasyRandom;
 import org.jeasy.random.EasyRandomParameters;
 
+import java.lang.reflect.Field;
+
 /**
  * A context object for a {@link Randomizer}.
  * This interface provides information about the randomization context.
@@ -51,6 +53,12 @@ public interface RandomizerContext {
      * @return currently randomized object
      */
     Object getCurrentObject();
+
+    /**
+     * Return the currently randomized reflective field in the object graph
+     * @return current field of randomized object
+     */
+    Field getField();
 
     /**
      * Return the full path to the current field being randomized (starting from the first field in the root type).

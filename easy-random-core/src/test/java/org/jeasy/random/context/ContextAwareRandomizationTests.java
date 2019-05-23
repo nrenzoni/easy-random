@@ -25,10 +25,19 @@ package org.jeasy.random.context;
 
 import org.jeasy.random.EasyRandom;
 import org.jeasy.random.EasyRandomParameters;
+import org.jeasy.random.FieldPredicates;
+import org.jeasy.random.api.ContextAwareRandomizer;
+import org.jeasy.random.api.RandomizerContext;
 import org.junit.jupiter.api.Test;
 
-import static org.jeasy.random.FieldPredicates.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.jeasy.random.FieldPredicates.*;
 
 public class ContextAwareRandomizationTests {
 
@@ -105,6 +114,63 @@ public class ContextAwareRandomizationTests {
         if (country.getName().equalsIgnoreCase("belgium")) {
             assertThat(city.getName().equalsIgnoreCase("brussels"));
         }
+    }
 
+    @Test
+    void testContextAwareRandomizerWithGetFieldForCustomAnnotation() throws NoSuchFieldException {
+        // given
+        EasyRandomParameters parameters = new EasyRandomParameters()
+                // so that validation passes
+                .randomize(FieldPredicates.isAnnotatedWith(ExampleAnnotation.class), new CustomRandomizerContext());
+        EasyRandom easyRandom = new EasyRandom(parameters);
+
+        // when
+        A a = easyRandom.nextObject(A.class);
+
+        // then
+        assertThat(a.b.d.value)
+                .isEqualTo(a.b.getClass().getDeclaredField("d").getAnnotation(ExampleAnnotation.class).value());
+    }
+
+    static class CustomRandomizerContext implements ContextAwareRandomizer<D> {
+
+        RandomizerContext context;
+
+        @Override
+        public void setRandomizerContext(RandomizerContext context) {
+            this.context = context;
+        }
+
+        @Override
+        public D getRandomValue() {
+            D d = new D();
+            d.value = context.getField().getAnnotation(ExampleAnnotation.class).value();
+            return d;
+        }
+    }
+
+    static class A {
+        private B b;
+    }
+
+    static class B {
+        private C c;
+
+        @ExampleAnnotation("some value")
+        private D d;
+    }
+
+    static class C {
+    }
+
+    static class D {
+        String value;
+    }
+
+    @Target({FIELD})
+    @Retention(RUNTIME)
+    @Documented
+    public @interface ExampleAnnotation {
+        String value();
     }
 }

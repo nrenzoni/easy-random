@@ -130,6 +130,11 @@ class RandomizationContext implements RandomizerContext {
     }
 
     @Override
+    public Field getField() throws NoSuchElementException {
+        return stack.lastElement().getField();
+    }
+
+    @Override
     public String getCurrentField() {
         return String.join(".", getStackedFieldNames());
     }
